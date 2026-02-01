@@ -10,6 +10,7 @@ import datetime
 from datetime import date, timedelta
 import random
 from itertools import product
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임을 임포트
@@ -171,9 +172,11 @@ if not detailed_monthly_payroll_df_for_gsheet.empty:
         detailed_monthly_payroll_df_for_gsheet[col] = detailed_monthly_payroll_df_for_gsheet[col].astype(str)
     detailed_monthly_payroll_df_for_gsheet = detailed_monthly_payroll_df_for_gsheet.replace({'None':'', 'NaT':'', 'nan':''})
 
+# --- 6. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Payroll')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'detailed_monthly_payroll_info.csv')
+if not detailed_monthly_payroll_df_for_gsheet.empty:
+    detailed_monthly_payroll_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

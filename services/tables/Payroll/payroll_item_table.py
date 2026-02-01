@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 1. 급여 항목 관리(Payroll Item Table) ---
@@ -49,9 +50,11 @@ for col in payroll_item_df_for_gsheet.columns:
     payroll_item_df_for_gsheet[col] = payroll_item_df_for_gsheet[col].astype(str)
 payroll_item_df_for_gsheet = payroll_item_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 4. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Payroll')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'payroll_item.csv')
+if not payroll_item_df_for_gsheet.empty:
+    payroll_item_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

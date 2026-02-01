@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 9. REGION TABLE (지역관리) ---
@@ -54,9 +55,11 @@ for col in region_df_for_gsheet.columns:
     region_df_for_gsheet[col] = region_df_for_gsheet[col].astype(str)
 region_df_for_gsheet = region_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'region.csv')
+if not region_df_for_gsheet.empty:
+    region_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

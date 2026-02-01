@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from datetime import timedelta
 import random
+import os
 
 # ==============================================================================
 # --- 4. PROJECT TABLE (프로젝트관리) ---
@@ -58,9 +59,11 @@ for col in pjt_df_for_gsheet.columns:
     pjt_df_for_gsheet[col] = pjt_df_for_gsheet[col].astype(str)
 pjt_df_for_gsheet = pjt_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'project.csv')
+if not pjt_df_for_gsheet.empty:
+    pjt_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

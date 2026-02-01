@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import date
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임을 임포트
@@ -81,9 +82,11 @@ for col in yearly_payroll_df_for_gsheet.columns:
     yearly_payroll_df_for_gsheet[col] = yearly_payroll_df_for_gsheet[col].astype(str)
 yearly_payroll_df_for_gsheet = yearly_payroll_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Payroll')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'yearly_payroll_info.csv')
+if not yearly_payroll_df_for_gsheet.empty:
+    yearly_payroll_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

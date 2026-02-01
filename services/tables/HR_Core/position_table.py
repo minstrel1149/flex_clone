@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 2. POSITION TABLE (직위/직급관리) ---
@@ -44,9 +45,11 @@ position_df_for_gsheet = position_df_for_gsheet.replace({'None': '', 'nan': '', 
 position_order = ['Staff', 'Manager', 'Director', 'C-Level']
 grade_order = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7']
 
+# --- 6. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'position.csv')
+if not position_df_for_gsheet.empty:
+    position_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

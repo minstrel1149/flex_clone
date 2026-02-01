@@ -6,6 +6,7 @@
 
 import pandas as pd
 import random
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임을 임포트
@@ -72,9 +73,11 @@ for col in evaluation_apply_df_for_gsheet.columns:
     evaluation_apply_df_for_gsheet[col] = evaluation_apply_df_for_gsheet[col].astype(str)
 evaluation_apply_df_for_gsheet = evaluation_apply_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 4. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Performance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'evaluation_apply.csv')
+if not evaluation_apply_df_for_gsheet.empty:
+    evaluation_apply_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

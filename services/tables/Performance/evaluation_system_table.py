@@ -6,6 +6,7 @@
 
 import pandas as pd
 import random
+import os
 
 # ==============================================================================
 # --- 1. 평가 시스템 관리 (Evaluation System Table) ---
@@ -51,9 +52,11 @@ for col in evaluation_system_df_for_gsheet.columns:
     evaluation_system_df_for_gsheet[col] = evaluation_system_df_for_gsheet[col].astype(str)
 evaluation_system_df_for_gsheet = evaluation_system_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Performance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'evaluation_system.csv')
+if not evaluation_system_df_for_gsheet.empty:
+    evaluation_system_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

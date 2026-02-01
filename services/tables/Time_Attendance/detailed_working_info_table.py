@@ -10,6 +10,7 @@ import datetime
 from datetime import date, timedelta
 import random
 from itertools import product
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임 및 헬퍼 데이터/함수를 임포트
@@ -137,9 +138,11 @@ for col in detailed_work_info_df_for_gsheet.columns:
     detailed_work_info_df_for_gsheet[col] = detailed_work_info_df_for_gsheet[col].astype(str)
 detailed_work_info_df_for_gsheet = detailed_work_info_df_for_gsheet.replace({'None':'', 'NaT':'', 'nan':''})
 
+# --- 7. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Time_Attendance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'detailed_working_info.csv')
+if not detailed_work_info_df_for_gsheet.empty:
+    detailed_work_info_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from datetime import date, timedelta
 import random
+import os
 
 # ==============================================================================
 # --- 1. DEPARTMENT TABLE (부서관리) ---
@@ -117,9 +118,11 @@ office_order = [
     'Engineering Office', 'Production Office', 'Operating Division (직속)'
 ]
 
+# --- 7. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'department.csv')
+if not department_df_for_gsheet.empty:
+    department_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

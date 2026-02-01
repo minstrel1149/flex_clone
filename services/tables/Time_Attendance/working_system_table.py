@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 1. 근무 시스템 관리 (Working System Table) ---
@@ -37,9 +38,11 @@ for col in work_sys_df_for_gsheet.columns:
     work_sys_df_for_gsheet[col] = work_sys_df_for_gsheet[col].astype(str)
 work_sys_df_for_gsheet = work_sys_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Time_Attendance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'working_system.csv')
+if not work_sys_df_for_gsheet.empty:
+    work_sys_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 import random
 from datetime import date, timedelta
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임 및 헬퍼 데이터/함수를 임포트
@@ -85,9 +86,11 @@ for col in daily_work_info_df_for_gsheet.columns:
     daily_work_info_df_for_gsheet[col] = daily_work_info_df_for_gsheet[col].astype(str)
 daily_work_info_df_for_gsheet = daily_work_info_df_for_gsheet.replace({'None':'', 'NaT':'', 'nan':''})
 
+# --- 6. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Time_Attendance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'daily_working_info.csv')
+if not daily_work_info_df_for_gsheet.empty:
+    daily_work_info_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

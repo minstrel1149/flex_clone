@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 6. 휴가 유형 관리 (Leave Type Table) ---
@@ -36,9 +37,11 @@ for col in leave_type_df_for_gsheet.columns:
     leave_type_df_for_gsheet[col] = leave_type_df_for_gsheet[col].astype(str)
 leave_type_df_for_gsheet = leave_type_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Time_Attendance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'leave_type.csv')
+if not leave_type_df_for_gsheet.empty:
+    leave_type_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

@@ -6,6 +6,7 @@
 
 import pandas as pd
 import numpy as np
+import os
 
 # ==============================================================================
 # --- 3. JOB TABLE (직무관리) ---
@@ -84,9 +85,11 @@ parent_map_job = job_df_indexed['UP_JOB_ID'].to_dict()
 job_l1_order = ['IT', 'Management Support', 'Planning', 'Production & Engineering', 'Sales & Marketing']
 job_l2_order = ['SW Developer', 'Infrastructure', 'Data Scientist', 'HR', 'Finance', 'Business Planning', 'Production Management', 'Engineering', 'Marketing', 'Sales']
 
+# --- 7. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'job.csv')
+if not job_df_for_gsheet.empty:
+    job_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

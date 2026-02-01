@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from datetime import date, timedelta
 import random
+import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임을 임포트
@@ -89,9 +90,11 @@ if not work_info_df_for_gsheet.empty:
         work_info_df_for_gsheet[col] = work_info_df_for_gsheet[col].astype(str)
     work_info_df_for_gsheet = work_info_df_for_gsheet.replace({'None':'', 'NaT':'', 'nan':''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'Time_Attendance')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'working_info.csv')
+if not work_info_df_for_gsheet.empty:
+    work_info_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

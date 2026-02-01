@@ -10,7 +10,8 @@ import datetime
 from datetime import date, timedelta
 from faker import Faker
 import random
-from table.common import TOTAL_EMPLOYEES
+from services.tables.common import TOTAL_EMPLOYEES
+import os
 
 # ==============================================================================
 # --- 10. BASIC INFO TABLE (기본정보) ---
@@ -101,9 +102,11 @@ for col in emp_df_for_gsheet.columns:
     emp_df_for_gsheet[col] = emp_df_for_gsheet[col].astype(str)
 emp_df_for_gsheet = emp_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 7. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'basic_info.csv')
+if not emp_df_for_gsheet.empty:
+    emp_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

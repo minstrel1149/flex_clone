@@ -6,6 +6,7 @@
 
 import pandas as pd
 import random
+import os
 
 # ==============================================================================
 # --- 7. SCHOOL TABLE (학력관리) ---
@@ -117,9 +118,11 @@ for col in school_df_for_gsheet.columns:
     school_df_for_gsheet[col] = school_df_for_gsheet[col].astype(str)
 school_df_for_gsheet = school_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'school.csv')
+if not school_df_for_gsheet.empty:
+    school_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

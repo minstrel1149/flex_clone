@@ -6,6 +6,7 @@
 
 import pandas as pd
 import random
+import os
 
 # ==============================================================================
 # --- 6. CAREER TABLE (경력관리) ---
@@ -63,9 +64,11 @@ for col in career_df_for_gsheet.columns:
     career_df_for_gsheet[col] = career_df_for_gsheet[col].astype(str)
 career_df_for_gsheet = career_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'career.csv')
+if not career_df_for_gsheet.empty:
+    career_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

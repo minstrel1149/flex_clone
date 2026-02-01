@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from datetime import date, timedelta
 import random
+import os
 
 # --- 1. 사전 준비 ---
 from services.tables.HR_Core.basic_info_table import emp_df
@@ -145,9 +146,11 @@ if not department_info_df_for_gsheet.empty:
         department_info_df_for_gsheet[col] = department_info_df_for_gsheet[col].astype(str)
     department_info_df_for_gsheet = department_info_df_for_gsheet.replace({'None':'', 'NaT':'', 'nan':''})
 
+# --- 7. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'department_info.csv')
+if not department_info_df_for_gsheet.empty:
+    department_info_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

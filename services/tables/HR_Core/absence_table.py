@@ -5,6 +5,7 @@
 
 
 import pandas as pd
+import os
 
 # ==============================================================================
 # --- 5. ABSENCE TABLE (휴직관리) ---
@@ -27,9 +28,11 @@ for col in absence_df_for_gsheet.columns:
     absence_df_for_gsheet[col] = absence_df_for_gsheet[col].astype(str)
 absence_df_for_gsheet = absence_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 4. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'absence.csv')
+if not absence_df_for_gsheet.empty:
+    absence_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")

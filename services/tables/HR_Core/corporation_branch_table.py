@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 from datetime import date, timedelta
 import random
+import os
 
 # ==============================================================================
 # --- 8. CORPORATION/BRANCH TABLE (법인/지사관리) ---
@@ -77,9 +78,11 @@ for col in corp_branch_df_for_gsheet.columns:
     corp_branch_df_for_gsheet[col] = corp_branch_df_for_gsheet[col].astype(str)
 corp_branch_df_for_gsheet = corp_branch_df_for_gsheet.replace({'None': '', 'nan': '', 'NaT': ''})
 
+# --- 5. CSV Export ---
+output_dir = os.path.join('services', 'csv_tables', 'HR_Core')
+os.makedirs(output_dir, exist_ok=True)
+output_path = os.path.join(output_dir, 'corporation_branch.csv')
+if not corp_branch_df_for_gsheet.empty:
+    corp_branch_df_for_gsheet.to_csv(output_path, index=False, encoding='utf-8-sig')
 
-# In[ ]:
-
-
-
-
+print(f"Data exported to {output_path}")
