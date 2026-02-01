@@ -123,7 +123,7 @@ salary_contract_info_df = pd.DataFrame(salary_contract_info_records)
 date_cols = ['SAL_START_DATE', 'SAL_END_DATE']
 if not salary_contract_info_df.empty:
     for col in date_cols:
-        salary_contract_info_df[col] = pd.to_datetime(salary_contract_info_df[col], errors='coerce')
+        salary_contract_info_df[col] = pd.to_datetime(salary_contract_info_df[col], errors='coerce').astype('datetime64[ns]')
 
 salary_contract_info_df_for_gsheet = salary_contract_info_df.copy()
 if not salary_contract_info_df_for_gsheet.empty:

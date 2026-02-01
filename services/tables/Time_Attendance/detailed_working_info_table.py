@@ -14,7 +14,7 @@ import os
 
 # --- 1. 사전 준비 ---
 # 다른 모듈에서 생성된 데이터프레임 및 헬퍼 데이터/함수를 임포트
-from services.tables.common import START_DATE, END_DATE
+from services.tables.common import START_DATE
 from services.tables.HR_Core.basic_info_table import emp_df
 from services.tables.HR_Core.department_table import department_df, parent_map_dept, dept_level_map, dept_name_map
 from services.tables.HR_Core.department_info_table import department_info_df
@@ -45,6 +45,7 @@ emp_dates_df = emp_df[['EMP_ID', 'IN_DATE', 'OUT_DATE']].copy()
 emp_ids = emp_dates_df['EMP_ID'].unique()
 scaffold_index = pd.MultiIndex.from_product([emp_ids, date_range_series], names=['EMP_ID', 'DATE'])
 df = pd.DataFrame(index=scaffold_index).reset_index()
+df['DATE'] = df['DATE'].astype('datetime64[ns]')
 df = pd.merge(df, emp_dates_df, on='EMP_ID', how='left')
 df = df[(df['DATE'] >= df['IN_DATE']) & (pd.isna(df['OUT_DATE']) | (df['DATE'] <= df['OUT_DATE']))].copy()
 df = pd.merge_asof(

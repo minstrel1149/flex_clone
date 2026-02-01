@@ -48,6 +48,10 @@ scaffold_df = scaffold_df[
     (scaffold_df['PAY_PERIOD_DT'] >= scaffold_df['IN_DATE'].dt.to_period('M').dt.to_timestamp()) &
     (pd.isna(scaffold_df['OUT_DATE']) | (scaffold_df['PAY_PERIOD_DT'] <= scaffold_df['OUT_DATE']))
 ].copy()
+
+scaffold_df['PAY_PERIOD_DT'] = scaffold_df['PAY_PERIOD_DT'].astype('datetime64[ns]')
+salary_contract_info_df_sorted['SAL_START_DATE'] = salary_contract_info_df_sorted['SAL_START_DATE'].astype('datetime64[ns]')
+
 payroll_base_df = pd.merge_asof(
     scaffold_df.sort_values('PAY_PERIOD_DT'), salary_contract_info_df_sorted,
     left_on='PAY_PERIOD_DT', right_on='SAL_START_DATE', by='EMP_ID', direction='backward'

@@ -89,8 +89,8 @@ if not assignable_departments_df.empty:
 
 base_assignments_df = pd.DataFrame(base_assignment_records)
 # (이하 코드는 이전과 동일합니다)
-base_assignments_df['DEP_APP_START_DATE'] = pd.to_datetime(base_assignments_df['DEP_APP_START_DATE'])
-base_assignments_df['DEP_APP_END_DATE'] = pd.to_datetime(base_assignments_df['DEP_APP_END_DATE'])
+base_assignments_df['DEP_APP_START_DATE'] = pd.to_datetime(base_assignments_df['DEP_APP_START_DATE']).astype('datetime64[ns]')
+base_assignments_df['DEP_APP_END_DATE'] = pd.to_datetime(base_assignments_df['DEP_APP_END_DATE']).astype('datetime64[ns]')
 
 # --- 3. 2단계: 부서장 선출 및 기록 단편화 ---
 fragmented_records = []

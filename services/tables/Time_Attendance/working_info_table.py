@@ -80,7 +80,7 @@ work_info_df = pd.DataFrame(work_info_records)
 date_cols = ['WORK_ASSIGN_START_DATE', 'WORK_ASSIGN_END_DATE']
 if not work_info_df.empty:
     for col in date_cols:
-        work_info_df[col] = pd.to_datetime(work_info_df[col], errors='coerce')
+        work_info_df[col] = pd.to_datetime(work_info_df[col], errors='coerce').astype('datetime64[ns]')
 
 work_info_df_for_gsheet = work_info_df.copy()
 if not work_info_df_for_gsheet.empty:
