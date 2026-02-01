@@ -62,10 +62,13 @@ scripts_to_run = [
     "services/tables/Payroll/yearly_payroll_info_table.py"
 ]
 
+env = os.environ.copy()
+env['PYTHONPATH'] = project_root
+
 for script in scripts_to_run:
     print(f"Running {script}...")
     try:
-        result = subprocess.run([sys.executable, script], check=True, capture_output=True, text=True, encoding='utf-8')
+        result = subprocess.run([sys.executable, script], check=True, capture_output=True, text=True, encoding='utf-8', env=env)
         print(result.stdout)
         if result.stderr:
             print("Stderr:")

@@ -1,0 +1,31 @@
+﻿JOB_ID,JOB_NAME,UP_JOB_ID,JOB_LEVEL,JOB_CONN
+JOB001,IT,,1,IT
+JOB002,SW Developer,JOB001,2,IT - SW Developer
+JOB003,Backend Developer,JOB002,3,IT - SW Developer - Backend Developer
+JOB004,Frontend Developer,JOB002,3,IT - SW Developer - Frontend Developer
+JOB005,Mobile Developer,JOB002,3,IT - SW Developer - Mobile Developer
+JOB006,Infrastructure,JOB001,2,IT - Infrastructure
+JOB007,DevOps Engineer,JOB006,3,IT - Infrastructure - DevOps Engineer
+JOB008,Data Scientist,JOB001,2,IT - Data Scientist
+JOB009,Data Analyst,JOB008,3,IT - Data Scientist - Data Analyst
+JOB010,Management Support,,1,Management Support
+JOB011,HR,JOB010,2,Management Support - HR
+JOB012,Recruiter,JOB011,3,Management Support - HR - Recruiter
+JOB013,HR Generalist,JOB011,3,Management Support - HR - HR Generalist
+JOB014,Finance,JOB010,2,Management Support - Finance
+JOB015,Accountant,JOB014,3,Management Support - Finance - Accountant
+JOB016,Sales & Marketing,,1,Sales & Marketing
+JOB017,Marketing,JOB016,2,Sales & Marketing - Marketing
+JOB018,Performance Marketer,JOB017,3,Sales & Marketing - Marketing - Performance Marketer
+JOB019,Content Marketer,JOB017,3,Sales & Marketing - Marketing - Content Marketer
+JOB020,Sales,JOB016,2,Sales & Marketing - Sales
+JOB021,Sales Manager,JOB020,3,Sales & Marketing - Sales - Sales Manager
+JOB022,Planning,,1,Planning
+JOB023,Business Planning,JOB022,2,Planning - Business Planning
+JOB024,Strategic Planner,JOB023,3,Planning - Business Planning - Strategic Planner
+JOB025,Production & Engineering,,1,Production & Engineering
+JOB026,Production Management,JOB025,2,Production & Engineering - Production Management
+JOB027,Production Manager,JOB026,3,Production & Engineering - Production Management - Production Manager
+JOB028,Engineering,JOB025,2,Production & Engineering - Engineering
+JOB029,Process Engineer,JOB028,3,Production & Engineering - Engineering - Process Engineer
+JOB030,QA Engineer,JOB028,3,Production & Engineering - Engineering - QA Engineer

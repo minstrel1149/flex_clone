@@ -1,0 +1,5 @@
+﻿ABSENCE_ID,ABSENCE_NAME,ABSENCE_PAY_MIN
+ABS001,Parental Leave,0.0
+ABS002,Hospital Leave,0.0
+ABS003,Educational Leave,0.3
+ABS004,General Leave,0.0

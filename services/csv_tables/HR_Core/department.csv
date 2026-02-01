@@ -1,0 +1,36 @@
+﻿DEP_ID,DEP_NAME,UP_DEP_ID,DEP_LEVEL,DEPT_TYPE,DEP_REL_START_DATE,DEP_REL_END_DATE,DEP_USE_YN
+DEP001,Headquarters,,1,본사,2010-01-01,,Y
+DEP002,Planning Division,DEP001,2,본사,2010-07-17,,Y
+DEP003,Development Division,DEP001,2,본사,2010-03-09,,Y
+DEP004,Sales Division,DEP001,2,본사,2010-02-25,,Y
+DEP005,Operating Division,DEP001,2,현장,2010-01-09,,Y
+DEP006,Strategy Office,DEP002,3,본사,2010-10-28,,Y
+DEP007,Finance Office,DEP002,3,본사,2011-04-10,,Y
+DEP008,R&D Office,DEP003,3,본사,2010-11-22,,Y
+DEP009,QA Office,DEP003,3,본사,2010-10-09,,Y
+DEP010,Marketing Office,DEP004,3,본사,2010-05-12,,Y
+DEP011,Domestic Sales Office,DEP004,3,본사,2010-04-15,,Y
+DEP012,Global Sales Office,DEP004,3,본사,2010-05-26,,Y
+DEP013,Engineering Office,DEP005,3,현장,2010-09-09,,Y
+DEP014,Production Office,DEP005,3,현장,2010-01-28,,Y
+DEP015,Planning Team,DEP006,4,본사,2011-07-27,,Y
+DEP016,Analysis Team,DEP006,4,본사,2011-07-12,,Y
+DEP017,HR Team,DEP006,4,본사,2010-12-27,,Y
+DEP018,Accounting Team,DEP007,4,본사,2011-05-27,,Y
+DEP019,Treasury Team,DEP007,4,본사,2011-12-12,,Y
+DEP020,Backend Team,DEP008,4,본사,2011-01-27,,Y
+DEP021,Frontend Team,DEP008,4,본사,2011-08-25,,Y
+DEP022,Mobile Team,DEP008,4,본사,2010-11-22,,Y
+DEP023,System QA Team,DEP009,4,본사,2011-05-17,,Y
+DEP024,Service QA Team,DEP009,4,본사,2011-07-03,,Y
+DEP025,Performance Marketing Team,DEP010,4,본사,2010-12-13,,Y
+DEP026,Content Marketing Team,DEP010,4,본사,2010-11-17,,Y
+DEP027,Domestic Sales Team 1,DEP011,4,본사,2010-05-07,,Y
+DEP028,Domestic Sales Team 2,DEP011,4,본사,2011-01-11,,Y
+DEP029,APAC Sales Team,DEP012,4,본사,2010-12-31,,Y
+DEP030,EU/NA Sales Team,DEP012,4,본사,2010-09-20,,Y
+DEP031,Process Engineering Team,DEP013,4,현장,2011-05-13,,Y
+DEP032,Quality Engineering Team,DEP013,4,현장,2011-03-23,,Y
+DEP033,Production Team Alpha,DEP014,4,현장,2010-07-26,,Y
+DEP034,Production Team Beta,DEP014,4,현장,2010-11-18,,Y
+DEP035,Production Team Charlie,DEP014,4,현장,2010-03-19,,Y

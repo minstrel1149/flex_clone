@@ -1,0 +1,8 @@
+﻿POSITION_ID,GRADE_ID,POSITION_NAME,GRADE_NAME,POSITION_CONN
+POS001,G1,Staff,Staff Grade 1,Staff - G1
+POS001,G2,Staff,Staff Grade 2,Staff - G2
+POS002,G3,Manager,Manager Grade 1,Manager - G3
+POS002,G4,Manager,Manager Grade 2,Manager - G4
+POS003,G5,Director,Director Grade 1,Director - G5
+POS003,G6,Director,Director Grade 2,Director - G6
+POS004,G7,C-Level,Executive Grade,C-Level - G7

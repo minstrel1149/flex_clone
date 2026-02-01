@@ -1,0 +1,26 @@
+﻿REG_ID,REG_NAME,DOMESTIC_YN
+R001,서울특별시,Y
+R002,부산광역시,Y
+R003,대구광역시,Y
+R004,인천광역시,Y
+R005,광주광역시,Y
+R006,대전광역시,Y
+R007,울산광역시,Y
+R008,세종특별자치시,Y
+R009,경기도,Y
+R010,강원도,Y
+R011,충청북도,Y
+R012,충청남도,Y
+R013,전라북도,Y
+R014,전라남도,Y
+R015,경상북도,Y
+R016,경상남도,Y
+R017,제주특별자치도,Y
+R018,United States,N
+R019,Mexico,N
+R020,Germany,N
+R021,France,N
+R022,Hungary,N
+R023,China,N
+R024,Vietnam,N
+R025,Philippines,N

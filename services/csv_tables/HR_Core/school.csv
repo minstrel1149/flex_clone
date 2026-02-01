@@ -1,0 +1,101 @@
+﻿SCHOOL_ID,SCHOOL_NAME,SCHOOL_DOMESTIC_YN,SCHOOL_TYPE,SCHOOL_LEVEL
+SC001,강원대학교,Y,4년제,3
+SC002,경민대학교,Y,전문학사,4
+SC003,동양미래대학교,Y,전문학사,4
+SC004,인하공업전문대학,Y,전문학사,4
+SC005,상명대학교,Y,4년제,2
+SC006,제주대학교,Y,4년제,1
+SC007,제주한라대학교,Y,전문학사,3
+SC008,부산대학교,Y,4년제,3
+SC009,Stanford University,N,외국대학,1
+SC010,목포대학교,Y,4년제,2
+SC011,University of Oxford,N,외국대학,1
+SC012,군산대학교,Y,4년제,2
+SC013,대전보건대학교,Y,전문학사,3
+SC014,University of Michigan-Ann Arbor,N,외국대학,3
+SC015,대림대학교,Y,전문학사,4
+SC016,백석예술대학교,Y,전문학사,4
+SC017,서정대학교,Y,전문학사,3
+SC018,경희대학교,Y,4년제,2
+SC019,동덕여자대학교,Y,4년제,3
+SC020,울산과학기술원,Y,4년제,3
+SC021,전북대학교,Y,4년제,3
+SC022,University of Toronto,N,외국대학,3
+SC023,삼육대학교,Y,4년제,3
+SC024,Johns Hopkins University,N,외국대학,2
+SC025,공주대학교,Y,4년제,2
+SC026,광운대학교,Y,4년제,2
+SC027,Harvard University,N,외국대학,1
+SC028,부천대학교,Y,전문학사,4
+SC029,서강대학교,Y,4년제,1
+SC030,오산대학교,Y,전문학사,4
+SC031,전남대학교,Y,4년제,3
+SC032,아주대학교,Y,4년제,2
+SC033,University of Cambridge,N,외국대학,1
+SC034,한성대학교,Y,4년제,2
+SC035,"University of California, Berkeley (UCB)",N,외국대학,2
+SC036,신구대학교,Y,전문학사,3
+SC037,University of Pennsylvania,N,외국대학,3
+SC038,한국해양대학교,Y,4년제,2
+SC039,명지대학교,Y,4년제,2
+SC040,안동대학교,Y,4년제,3
+SC041,한경대학교,Y,4년제,2
+SC042,덕성여자대학교,Y,4년제,2
+SC043,Massachusetts Institute of Technology (MIT),N,외국대학,1
+SC044,인덕대학교,Y,전문학사,4
+SC045,서울시립대학교,Y,4년제,3
+SC046,유한대학교,Y,전문학사,4
+SC047,두원공과대학교,Y,전문학사,4
+SC048,서일대학교,Y,전문학사,4
+SC049,숙명여자대학교,Y,4년제,3
+SC050,금오공과대학교,Y,4년제,3
+SC051,안산대학교,Y,전문학사,4
+SC052,수원여자대학교,Y,전문학사,4
+SC053,Heidelberg University,N,외국대학,3
+SC054,Imperial College London,N,외국대학,3
+SC055,충북대학교,Y,4년제,3
+SC056,Yale University,N,외국대학,2
+SC057,서울여자대학교,Y,4년제,2
+SC058,광주과학기술원,Y,4년제,3
+SC059,목포해양대학교,Y,4년제,3
+SC060,동국대학교,Y,4년제,2
+SC061,경복대학교,Y,전문학사,4
+SC062,카이스트,Y,4년제,1
+SC063,계원예술대학교,Y,전문학사,4
+SC064,부산과학기술대학교,Y,전문학사,4
+SC065,광주보건대학교,Y,전문학사,4
+SC066,한양여자대학교,Y,전문학사,4
+SC067,충남대학교,Y,4년제,2
+SC068,건국대학교,Y,4년제,3
+SC069,대구경북과학기술원,Y,4년제,3
+SC070,부경대학교,Y,4년제,3
+SC071,한국예술종합학교,Y,4년제,2
+SC072,한국전통문화대학교,Y,4년제,2
+SC073,서울대학교,Y,4년제,1
+SC074,연세대학교,Y,4년제,1
+SC075,한국체육대학교,Y,4년제,3
+SC076,고려대학교,Y,4년제,1
+SC077,청강문화산업대학교,Y,전문학사,4
+SC078,서울예술대학교,Y,전문학사,3
+SC079,홍익대학교,Y,4년제,3
+SC080,포항공과대학교,Y,4년제,1
+SC081,배화여자대학교,Y,전문학사,4
+SC082,ETH Zurich (Swiss Federal Institute of Technology Zurich),N,외국대학,3
+SC083,가톨릭대학교,Y,4년제,2
+SC084,California Institute of Technology (Caltech),N,외국대학,2
+SC085,중앙대학교,Y,4년제,3
+SC086,세종대학교,Y,4년제,2
+SC087,숭실대학교,Y,4년제,3
+SC088,Princeton University,N,외국대학,3
+SC089,경기과학기술대학교,Y,전문학사,4
+SC090,University of Chicago,N,외국대학,2
+SC091,한양대학교,Y,4년제,2
+SC092,Tsinghua University,N,외국대학,1
+SC093,Kyoto University,N,외국대학,3
+SC094,연성대학교,Y,전문학사,4
+SC095,성신여자대학교,Y,4년제,3
+SC096,성균관대학교,Y,4년제,1
+SC097,Sorbonne University,N,외국대학,1
+SC098,김포대학교,Y,전문학사,4
+SC099,울산과학대학교,Y,전문학사,4
+SC100,동서울대학교,Y,전문학사,4

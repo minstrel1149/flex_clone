@@ -1,0 +1,13 @@
+﻿CORP_ID,CORP_REL_START_DATE,CORP_NAME,UP_CORP_ID,CORP_USE_YN,CORP_REL_END_DATE,CORP_REG_LEVEL
+C01,2017-03-04,NeoTech,,Y,,Corporation
+C02,2011-04-02,KoreaDynamics,,Y,,Corporation
+C03,2010-04-13,BlueWave,,Y,,Corporation
+C04,2018-04-26,MetaSys,,Y,,Corporation
+B01,2010-05-03,NeoTech Incheon Branch,C01,Y,,Branch
+B01,2010-05-11,KoreaDynamics Incheon Branch,C02,Y,,Branch
+B02,2015-09-01,NeoTech Busan Branch,C01,Y,,Branch
+B03,2018-01-11,MetaSys Daejeon Branch,C04,Y,,Branch
+B04,2015-01-14,BlueWave Seoul Branch,C03,Y,,Branch
+B05,2018-07-06,KoreaDynamics Ulsan Branch,C02,Y,,Branch
+B06,2013-02-12,KoreaDynamics Jeju Branch,C02,Y,,Branch
+B06,2013-10-25,KoreaDynamics Jeju Branch,C02,Y,,Branch
