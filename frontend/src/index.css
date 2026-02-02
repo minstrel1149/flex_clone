@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+:root {
+  background-color: #F7F8FA; /* Flex 스타일 배경색 */
+}
