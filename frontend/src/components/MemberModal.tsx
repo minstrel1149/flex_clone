@@ -1,16 +1,16 @@
-import { X, User, Mail, Phone, MapPin, Calendar, Briefcase, Hash } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, Calendar, Briefcase, Hash, Target } from 'lucide-react';
 
 interface MemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  member: any; // 구체적인 타입은 나중에 정의
+  member: any;
 }
 
 export function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
   if (!isOpen || !member) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         
         {/* 헤더 */}
@@ -21,7 +21,7 @@ export function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{member.NAME}</h2>
-              <p className="text-gray-500">{member.ENG_NAME}</p>
+              <p className="text-gray-500">{member.ENG_NAME} ({member.NICKNAME || '별명 없음'})</p>
             </div>
           </div>
           <button 
@@ -35,14 +35,27 @@ export function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
         {/* 컨텐츠 */}
         <div className="p-6 space-y-8">
           
-          {/* 기본 정보 섹션 */}
+          {/* 조직 정보 섹션 */}
           <section>
-            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">기본 정보</h3>
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">조직 정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
               <InfoItem icon={Briefcase} label="부서" value={member.DEPT_NAME || '미배정'} />
+              <InfoItem icon={Target} label="직무" value={member.JOB_NAME || '미배정'} />
               <InfoItem icon={User} label="직위" value={member.POSITION_NAME || '미배정'} />
               <InfoItem icon={Hash} label="사번" value={member.EMP_ID} />
+            </div>
+          </section>
+
+          <hr className="border-gray-100" />
+
+          {/* 인사 정보 섹션 */}
+          <section>
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">인사 정보</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
               <InfoItem icon={Calendar} label="입사일" value={member.IN_DATE} />
+              <InfoItem icon={Calendar} label="그룹 입사일" value={member.GROUP_IN_DATE} />
+              <InfoItem icon={User} label="재직 상태" value={member.CURRENT_EMP_YN === 'Y' ? '재직' : '퇴사'} />
+              {member.OUT_DATE && <InfoItem icon={Calendar} label="퇴사일" value={member.OUT_DATE} />}
             </div>
           </section>
 
@@ -52,7 +65,7 @@ export function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
           <section>
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">연락처 및 개인정보</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-              <InfoItem icon={Mail} label="이메일" value={member.EMAIL} copyable />
+              <InfoItem icon={Mail} label="이메일" value={member.EMAIL} />
               <InfoItem icon={Phone} label="전화번호" value={member.PHONE_NUM} />
               <div className="col-span-2">
                  <InfoItem icon={MapPin} label="주소" value={member.ADDRESS} />
@@ -76,8 +89,7 @@ export function MemberModal({ isOpen, onClose, member }: MemberModalProps) {
   );
 }
 
-// 헬퍼 컴포넌트
-function InfoItem({ icon: Icon, label, value, copyable = false }: any) {
+function InfoItem({ icon: Icon, label, value }: any) {
   return (
     <div className="flex items-start gap-3 group">
       <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 group-hover:text-indigo-500 group-hover:bg-indigo-50 transition-colors">
