@@ -266,3 +266,86 @@ def apply_off_site(item: dict):
         return {"message": "Off-site work applied"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/work/admin/daily-status")
+def get_all_daily_status(date: str = None):
+    try:
+        target_date = date if date else get_today_str()
+        
+        # 1. 직원 목록
+        emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME', 'ENG_NAME']]
+        
+        # 2. 부서 정보 추가
+        dept_info = load_csv("HR_Core", "department_info.csv")
+        dept_master = load_csv("HR_Core", "department.csv")
+        if dept_info is not None and dept_master is not None:
+            dept_info = dept_info.sort_values('DEP_APP_START_DATE').drop_duplicates('EMP_ID', keep='last')
+            emp_df = pd.merge(emp_df, dept_info[['EMP_ID', 'DEP_ID']], on="EMP_ID", how="left")
+            emp_df = pd.merge(emp_df, dept_master[['DEP_ID', 'DEP_NAME']], on="DEP_ID", how="left")
+        
+        # 3. 근무 기록
+        work_df = load_csv("Time_Attendance", "detailed_working_info.csv")
+        if work_df is not None:
+            today_work = work_df[work_df['DATE'] == target_date][['EMP_ID', 'DATE_START_TIME', 'DATE_END_TIME', 'WORK_ETC']]
+            emp_df = pd.merge(emp_df, today_work, on="EMP_ID", how="left")
+            
+        # 4. 휴가 기록
+        leave_df = load_csv("Time_Attendance", "detailed_leave_info.csv")
+        if leave_df is not None:
+             # 휴가는 범위일 수 있으나 여기선 단순화하여 해당 날짜의 기록만 확인
+            today_leave = leave_df[leave_df['DATE'] == target_date][['EMP_ID', 'LEAVE_TYPE_NAME']] # 컬럼명 확인 필요하나 가정
+            if 'LEAVE_TYPE_NAME' in leave_df.columns:
+                emp_df = pd.merge(emp_df, today_leave, on="EMP_ID", how="left")
+        
+        # 5. 상태 결정 로직
+        def determine_status(row):
+            if pd.notna(row.get('LEAVE_TYPE_NAME')) and row.get('LEAVE_TYPE_NAME') != "":
+                return "휴가"
+            if pd.notna(row.get('DATE_START_TIME')) and row.get('DATE_START_TIME') != "":
+                if pd.notna(row.get('DATE_END_TIME')) and row.get('DATE_END_TIME') != "":
+                    return "퇴근"
+                return "근무중"
+            return "미출근"
+
+        emp_df['STATUS'] = emp_df.apply(determine_status, axis=1)
+        
+        result = emp_df.fillna("").to_dict(orient="records")
+        return result
+    except Exception as e:
+        print(f"Admin API Error: {e}")
+        return []
+
+@app.get("/api/work/admin/monthly-stats")
+def get_all_monthly_stats(year: int, month: int):
+    try:
+        # 1. 직원 목록
+        emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME']]
+        
+        # 2. 부서 정보
+        dept_info = load_csv("HR_Core", "department_info.csv")
+        dept_master = load_csv("HR_Core", "department.csv")
+        if dept_info is not None and dept_master is not None:
+            dept_info = dept_info.sort_values('DEP_APP_START_DATE').drop_duplicates('EMP_ID', keep='last')
+            emp_df = pd.merge(emp_df, dept_info[['EMP_ID', 'DEP_ID']], on="EMP_ID", how="left")
+            emp_df = pd.merge(emp_df, dept_master[['DEP_ID', 'DEP_NAME']], on="DEP_ID", how="left")
+
+        # 3. 월간 근무 요약 데이터 (daily_working_info.csv 활용)
+        work_df = load_csv("Time_Attendance", "daily_working_info.csv")
+        if work_df is not None:
+            work_df['DATE'] = pd.to_datetime(work_df['DATE'])
+            monthly_df = work_df[(work_df['DATE'].dt.year == year) & (work_df['DATE'].dt.month == month)]
+            
+            # 직원별 집계
+            stats = monthly_df.groupby('EMP_ID').agg({
+                'ACTUAL_WORK_MINUTES': 'sum',
+                'OVERTIME_MINUTES': 'sum',
+                'DATE': 'count' # 근무 일수
+            }).reset_index().rename(columns={'DATE': 'WORK_DAYS'})
+            
+            emp_df = pd.merge(emp_df, stats, on="EMP_ID", how="left")
+            
+        result = emp_df.fillna(0).to_dict(orient="records")
+        return result
+    except Exception as e:
+        print(f"Monthly Admin API Error: {e}")
+        return []
