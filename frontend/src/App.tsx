@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Members } from './pages/Members';
+import { Work } from './pages/Work';
 
 // 아직 구현되지 않은 페이지들을 위한 Placeholder
 const Placeholder = ({ title }: { title: string }) => (
@@ -18,9 +19,9 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="members" element={<Members />} />
+          <Route path="work" element={<Work />} />
           
           {/* 나머지 메뉴들은 일단 Placeholder로 연결 */}
-          <Route path="work" element={<Placeholder title="근무" />} />
           <Route path="leaves" element={<Placeholder title="휴가" />} />
           <Route path="payroll" element={<Placeholder title="급여정산" />} />
           <Route path="documents" element={<Placeholder title="문서" />} />

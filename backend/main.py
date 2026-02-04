@@ -113,3 +113,156 @@ def get_dashboard_data(emp_id: str):
             "stats": {"total_work_minutes_this_week": 2400, "remaining_leave_days": 15.0}
         }
     except: return {}
+
+@app.get("/api/work/{emp_id}")
+def get_work_records(emp_id: str, year: int = None, month: int = None):
+    try:
+        df = load_csv("Time_Attendance", "daily_working_info.csv")
+        if df is None: return {"summary": {}, "records": []}
+        
+        # Filter by Employee
+        user_df = df[df['EMP_ID'] == emp_id].copy()
+        
+        # Filter by Date (if provided)
+        if year and month:
+            user_df['DATE'] = pd.to_datetime(user_df['DATE'])
+            user_df = user_df[
+                (user_df['DATE'].dt.year == year) & 
+                (user_df['DATE'].dt.month == month)
+            ]
+            user_df['DATE'] = user_df['DATE'].dt.strftime('%Y-%m-%d')
+        
+        # Sort by date desc
+        user_df = user_df.sort_values('DATE', ascending=False)
+        
+        records = user_df.to_dict(orient="records")
+        
+        # Calculate Summary
+        total_work = user_df['ACTUAL_WORK_MINUTES'].sum()
+        total_overtime = user_df['OVERTIME_MINUTES'].sum()
+        
+        return {
+            "summary": {
+                "total_work_minutes": total_work,
+                "total_overtime_minutes": total_overtime,
+                "work_days": len(user_df)
+            },
+            "records": records
+        }
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"summary": {}, "records": []}
+
+# --- Attendance / Clock-In / Clock-Out Logic ---
+from datetime import datetime
+
+ATTENDANCE_FILE = os.path.join("services", "csv_tables", "Time_Attendance", "detailed_working_info.csv")
+
+def get_today_str():
+    return datetime.now().strftime('%Y-%m-%d')
+
+def get_now_str():
+    return datetime.now().strftime('%H:%M')
+
+@app.get("/api/attendance/today/{emp_id}")
+def get_today_attendance(emp_id: str):
+    try:
+        # 파일이 크므로 필요한 부분만 읽거나, 전체 로드 후 필터링 (Pandas는 20MB 정도는 거뜬함)
+        if not os.path.exists(ATTENDANCE_FILE):
+             return {"status": "clean", "data": None}
+        
+        df = pd.read_csv(ATTENDANCE_FILE)
+        today = get_today_str()
+        
+        record = df[(df['EMP_ID'] == emp_id) & (df['DATE'] == today)]
+        
+        if record.empty:
+            return {"status": "before_work", "data": None}
+        
+        row = record.iloc[0].to_dict()
+        if pd.isna(row['DATE_END_TIME']) or row['DATE_END_TIME'] == "":
+            return {"status": "working", "data": row}
+        else:
+            return {"status": "after_work", "data": row}
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/attendance/clock-in")
+def clock_in(item: dict):
+    emp_id = item.get("emp_id")
+    try:
+        df = pd.read_csv(ATTENDANCE_FILE)
+        today = get_today_str()
+        
+        # 이미 기록이 있는지 확인
+        mask = (df['EMP_ID'] == emp_id) & (df['DATE'] == today)
+        if df[mask].shape[0] > 0:
+            return {"message": "Already clocked in", "status": "working"}
+        
+        # 새 기록 추가
+        new_row = {
+            "EMP_ID": emp_id,
+            "DATE": today,
+            "DATE_START_TIME": get_now_str(),
+            "DATE_END_TIME": "",
+            "WORK_ETC": ""
+        }
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df.to_csv(ATTENDANCE_FILE, index=False, encoding='utf-8-sig')
+        
+        return {"message": "Clocked in successfully", "status": "working", "start_time": new_row["DATE_START_TIME"]}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/attendance/clock-out")
+def clock_out(item: dict):
+    emp_id = item.get("emp_id")
+    try:
+        df = pd.read_csv(ATTENDANCE_FILE)
+        today = get_today_str()
+        
+        mask = (df['EMP_ID'] == emp_id) & (df['DATE'] == today)
+        if df[mask].empty:
+             raise HTTPException(status_code=400, detail="No clock-in record found for today")
+        
+        # 퇴근 시간 업데이트
+        df.loc[mask, 'DATE_END_TIME'] = get_now_str()
+        df.to_csv(ATTENDANCE_FILE, index=False, encoding='utf-8-sig')
+        
+        return {"message": "Clocked out successfully", "status": "after_work"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/attendance/off-site")
+def apply_off_site(item: dict):
+    # 외근 신청: type, start_time, end_time, location, reason 등을 받아서 WORK_ETC에 저장하거나
+    # DATE_START/END_TIME을 업데이트할 수도 있음. 여기서는 WORK_ETC에 JSON 형태로 저장한다고 가정.
+    emp_id = item.get("emp_id")
+    info = item.get("info") # 외근 정보 텍스트
+    try:
+        df = pd.read_csv(ATTENDANCE_FILE)
+        today = get_today_str()
+        
+        # 외근도 근태 기록이 있어야 한다면 생성, 아니면 업데이트. 
+        # 보통 외근 신청은 미리 할 수도 있으나, 여기선 '당일 외근 신청'으로 가정하고 행이 없으면 만듦.
+        mask = (df['EMP_ID'] == emp_id) & (df['DATE'] == today)
+        
+        if df[mask].empty:
+             new_row = {
+                "EMP_ID": emp_id,
+                "DATE": today,
+                "DATE_START_TIME": "",
+                "DATE_END_TIME": "",
+                "WORK_ETC": f"[외근] {info}"
+            }
+             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        else:
+            current_etc = df.loc[mask, 'WORK_ETC'].values[0]
+            if pd.isna(current_etc): current_etc = ""
+            df.loc[mask, 'WORK_ETC'] = f"{current_etc} | [외근] {info}"
+            
+        df.to_csv(ATTENDANCE_FILE, index=False, encoding='utf-8-sig')
+        return {"message": "Off-site work applied"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
