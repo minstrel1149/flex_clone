@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { Members } from './pages/Members';
 import { Work } from './pages/Work';
+import { Leaves } from './pages/Leaves';
 
 // 아직 구현되지 않은 페이지들을 위한 Placeholder
 const Placeholder = ({ title }: { title: string }) => (
@@ -20,9 +21,9 @@ function App() {
           <Route index element={<Home />} />
           <Route path="members" element={<Members />} />
           <Route path="work" element={<Work />} />
+          <Route path="leaves" element={<Leaves />} />
           
           {/* 나머지 메뉴들은 일단 Placeholder로 연결 */}
-          <Route path="leaves" element={<Placeholder title="휴가" />} />
           <Route path="payroll" element={<Placeholder title="급여정산" />} />
           <Route path="documents" element={<Placeholder title="문서" />} />
           <Route path="insights" element={<Placeholder title="인사이트" />} />

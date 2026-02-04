@@ -349,3 +349,112 @@ def get_all_monthly_stats(year: int, month: int):
     except Exception as e:
         print(f"Monthly Admin API Error: {e}")
         return []
+
+# --- Leaves API ---
+
+# 경로를 좀 더 안전하게 절대 경로로 변환 시도
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+LEAVE_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Time_Attendance", "detailed_leave_info.csv")
+LEAVE_TYPE_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Time_Attendance", "leave_type.csv")
+
+@app.get("/api/leaves/types")
+def get_leave_types():
+    try:
+        if not os.path.exists(LEAVE_TYPE_FILE):
+            print(f"Leave Type File Not Found: {LEAVE_TYPE_FILE}")
+            return []
+        df = pd.read_csv(LEAVE_TYPE_FILE)
+        return df.to_dict(orient="records")
+    except Exception as e:
+        print(f"Leave Types Error: {e}")
+        return []
+
+@app.get("/api/leaves/my/{emp_id}")
+def get_my_leaves(emp_id: str):
+    try:
+        # 1. 휴가 유형 로드
+        if not os.path.exists(LEAVE_TYPE_FILE):
+             print(f"Type file missing: {LEAVE_TYPE_FILE}")
+             return {"summary": {"remaining": 0}, "history": []}
+             
+        type_df = pd.read_csv(LEAVE_TYPE_FILE)
+        type_map = type_df.set_index('LEAVE_TYPE_ID')['LEAVE_TYPE_NAME'].to_dict()
+        
+        # 2. 내 휴가 기록 로드
+        if not os.path.exists(LEAVE_FILE):
+             print(f"Leave file missing: {LEAVE_FILE}")
+             return {"summary": {"remaining": 0}, "history": []}
+
+        df = pd.read_csv(LEAVE_FILE)
+        my_leaves = df[df['EMP_ID'] == emp_id].copy()
+        
+        # 3. 상세 정보 매핑
+        my_leaves['LEAVE_TYPE_NAME'] = my_leaves['LEAVE_TYPE_ID'].map(type_map)
+        my_leaves = my_leaves.sort_values('DATE', ascending=False)
+        
+        # 4. 잔여 연차 계산
+        total_used = my_leaves['LEAVE_LENGTH'].sum()
+        total_given = 15.0
+        remaining = total_given - total_used
+        
+        return {
+            "summary": {
+                "total_given": total_given,
+                "total_used": total_used,
+                "remaining": remaining
+            },
+            "history": my_leaves.fillna("").to_dict(orient="records")
+        }
+    except Exception as e:
+        print(f"My Leave Error: {e}")
+        # import traceback
+        # traceback.print_exc()
+        return {"summary": {"remaining": 0, "total_given": 15, "total_used": 0}, "history": []}
+
+@app.post("/api/leaves/apply")
+def apply_leave(item: dict):
+    try:
+        df = pd.read_csv(LEAVE_FILE)
+        
+        new_row = {
+            "EMP_ID": item['emp_id'],
+            "DATE": item['date'],
+            "LEAVE_TYPE_ID": item['leave_type_id'],
+            "LEAVE_LENGTH": float(item['leave_length'])
+        }
+        
+        df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        df.to_csv(LEAVE_FILE, index=False, encoding='utf-8-sig')
+        return {"message": "Leave applied successfully"}
+    except Exception as e:
+        print(f"Apply Leave Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/leaves/admin/status")
+def get_admin_leaves_status():
+    try:
+        # 1. 직원 목록
+        emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME']]
+        dept_info = load_csv("HR_Core", "department_info.csv")
+        dept_master = load_csv("HR_Core", "department.csv")
+        if dept_info is not None and dept_master is not None:
+             dept_info = dept_info.sort_values('DEP_APP_START_DATE').drop_duplicates('EMP_ID', keep='last')
+             emp_df = pd.merge(emp_df, dept_info[['EMP_ID', 'DEP_ID']], on="EMP_ID", how="left")
+             emp_df = pd.merge(emp_df, dept_master[['DEP_ID', 'DEP_NAME']], on="DEP_ID", how="left")
+
+        # 2. 휴가 통계
+        if os.path.exists(LEAVE_FILE):
+            leave_df = pd.read_csv(LEAVE_FILE)
+            stats = leave_df.groupby('EMP_ID')['LEAVE_LENGTH'].sum().reset_index().rename(columns={'LEAVE_LENGTH': 'USED_DAYS'})
+            emp_df = pd.merge(emp_df, stats, on="EMP_ID", how="left").fillna(0)
+        else:
+            emp_df['USED_DAYS'] = 0
+
+        emp_df['TOTAL_DAYS'] = 15.0 # 고정
+        emp_df['REMAINING_DAYS'] = emp_df['TOTAL_DAYS'] - emp_df['USED_DAYS']
+        
+        return emp_df.to_dict(orient="records")
+    except Exception as e:
+        print(f"Admin Leave Error: {e}")
+        return []
