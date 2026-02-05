@@ -159,7 +159,7 @@ from datetime import datetime
 ATTENDANCE_FILE = os.path.join("services", "csv_tables", "Time_Attendance", "detailed_working_info.csv")
 
 def get_today_str():
-    return datetime.now().strftime('%Y-%m-%d')
+    return '2025-12-31'
 
 def get_now_str():
     return datetime.now().strftime('%H:%M')
@@ -389,6 +389,11 @@ def get_my_leaves(emp_id: str):
         df = pd.read_csv(LEAVE_FILE)
         my_leaves = df[df['EMP_ID'] == emp_id].copy()
         
+        # 날짜 필터링 (2025년 고정)
+        current_year = 2025
+        my_leaves['DATE_DT'] = pd.to_datetime(my_leaves['DATE'])
+        my_leaves = my_leaves[my_leaves['DATE_DT'].dt.year == current_year]
+        
         # 3. 상세 정보 매핑
         my_leaves['LEAVE_TYPE_NAME'] = my_leaves['LEAVE_TYPE_ID'].map(type_map)
         my_leaves = my_leaves.sort_values('DATE', ascending=False)
@@ -398,13 +403,16 @@ def get_my_leaves(emp_id: str):
         total_given = 15.0
         remaining = total_given - total_used
         
+        # 반환 시 임시 컬럼 제거
+        result_history = my_leaves.drop(columns=['DATE_DT']).fillna("").to_dict(orient="records")
+
         return {
             "summary": {
                 "total_given": total_given,
                 "total_used": total_used,
                 "remaining": remaining
             },
-            "history": my_leaves.fillna("").to_dict(orient="records")
+            "history": result_history
         }
     except Exception as e:
         print(f"My Leave Error: {e}")
@@ -432,7 +440,7 @@ def apply_leave(item: dict):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/leaves/admin/status")
-def get_admin_leaves_status():
+def get_admin_leaves_status(year: int = 2025):
     try:
         # 1. 직원 목록
         emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME']]
@@ -446,6 +454,11 @@ def get_admin_leaves_status():
         # 2. 휴가 통계
         if os.path.exists(LEAVE_FILE):
             leave_df = pd.read_csv(LEAVE_FILE)
+            
+            # 선택된 연도 데이터만 필터링
+            leave_df['DATE'] = pd.to_datetime(leave_df['DATE'])
+            leave_df = leave_df[leave_df['DATE'].dt.year == year]
+            
             stats = leave_df.groupby('EMP_ID')['LEAVE_LENGTH'].sum().reset_index().rename(columns={'LEAVE_LENGTH': 'USED_DAYS'})
             emp_df = pd.merge(emp_df, stats, on="EMP_ID", how="left").fillna(0)
         else:

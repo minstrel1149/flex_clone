@@ -172,16 +172,33 @@ const MyLeaves = () => {
 const LeaveManagement = () => {
     const [employees, setEmployees] = useState<EmpLeaveStatus[]>([]);
     const [loading, setLoading] = useState(true);
+    const [year, setYear] = useState(2025);
 
     useEffect(() => {
-        axios.get('http://127.0.0.1:8000/api/leaves/admin/status')
+        setLoading(true);
+        axios.get(`http://127.0.0.1:8000/api/leaves/admin/status?year=${year}`)
             .then(res => { setEmployees(res.data); setLoading(false); })
             .catch(() => setLoading(false));
-    }, []);
+    }, [year]);
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-             <div className="flex justify-end mb-6">
+             <div className="flex justify-between items-center mb-6">
+                <div className="relative">
+                    <select 
+                        value={year} 
+                        onChange={(e) => setYear(Number(e.target.value))}
+                        className="appearance-none pl-4 pr-10 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm cursor-pointer"
+                    >
+                        <option value={2025}>2025년</option>
+                        <option value={2024}>2024년</option>
+                        <option value={2023}>2023년</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+
                 <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm">
                     <Download size={18} />
                     <span>현황 다운로드</span>
@@ -190,7 +207,7 @@ const LeaveManagement = () => {
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                    <h2 className="font-bold text-gray-800">전사 연차 사용 현황</h2>
+                    <h2 className="font-bold text-gray-800">{year}년 전사 연차 사용 현황</h2>
                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">총 {employees.length}명</span>
                 </div>
                 <div className="overflow-x-auto">
