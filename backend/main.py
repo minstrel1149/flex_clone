@@ -730,3 +730,159 @@ def get_admin_yearly_stats(year: int):
     except Exception as e:
         print(f"Admin Yearly Payroll Error: {e}")
         return []
+
+# --- Document / Approval API ---
+
+DOCS_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Approval", "approval_docs.csv")
+LINES_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Approval", "approval_lines.csv")
+
+@app.get("/api/documents/my-drafts/{emp_id}")
+def get_my_drafts(emp_id: str):
+    try:
+        if not os.path.exists(DOCS_FILE): return []
+        df = pd.read_csv(DOCS_FILE).fillna("")
+        
+        # 내가 작성한 문서
+        my_docs = df[df['EMP_ID'] == emp_id].copy().sort_values('CREATED_AT', ascending=False)
+        return my_docs.to_dict(orient="records")
+    except Exception as e:
+        print(f"My Drafts Error: {e}")
+        return []
+
+@app.get("/api/documents/to-approve/{emp_id}")
+def get_docs_to_approve(emp_id: str):
+    try:
+        if not os.path.exists(DOCS_FILE) or not os.path.exists(LINES_FILE): return []
+        
+        docs = pd.read_csv(DOCS_FILE).fillna("")
+        lines = pd.read_csv(LINES_FILE).fillna("")
+        
+        # 내가 결재할 차례인 라인 찾기 (Status is Pending and Approver is Me)
+        # 실제로는 Step 순서 체크가 필요하지만, 프로토타입에서는 Pending인 본인 건은 다 보여줌
+        my_lines = lines[(lines['APPROVER_ID'] == emp_id) & (lines['STATUS'] == 'Pending')]
+        
+        # Join with Docs
+        merged = pd.merge(my_lines, docs, on='DOC_ID', how='left')
+        
+        # Filter out if doc is already completed (safety check)
+        merged = merged[merged['STATUS_y'] != 'Approved'] # STATUS_y is Doc Status
+        
+        # Clean up
+        result = merged.rename(columns={'STATUS_y': 'DOC_STATUS', 'STATUS_x': 'MY_STATUS'}).fillna("")
+        return result.sort_values('CREATED_AT', ascending=False).to_dict(orient="records")
+    except Exception as e:
+        print(f"To Approve Error: {e}")
+        return []
+
+@app.post("/api/documents/approve")
+def approve_document(item: dict):
+    # item: { doc_id, approver_id, comment }
+    try:
+        if not os.path.exists(DOCS_FILE) or not os.path.exists(LINES_FILE): 
+            raise HTTPException(status_code=404, detail="Files not found")
+            
+        lines = pd.read_csv(LINES_FILE)
+        docs = pd.read_csv(DOCS_FILE)
+        
+        doc_id = item['doc_id']
+        approver_id = item['approver_id']
+        comment = item.get('comment', '')
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # 1. Update Line
+        line_mask = (lines['DOC_ID'] == doc_id) & (lines['APPROVER_ID'] == approver_id) & (lines['STATUS'] == 'Pending')
+        if lines[line_mask].empty:
+            raise HTTPException(status_code=400, detail="No pending approval found")
+            
+        lines.loc[line_mask, 'STATUS'] = 'Approved'
+        lines.loc[line_mask, 'APPROVED_AT'] = today
+        lines.loc[line_mask, 'COMMENT'] = comment
+        lines.to_csv(LINES_FILE, index=False, encoding='utf-8-sig')
+        
+        # 2. Check if all lines are approved? 
+        # For prototype, assume 1-step approval or check if any pending lines left
+        pending_lines = lines[(lines['DOC_ID'] == doc_id) & (lines['STATUS'] == 'Pending')]
+        if pending_lines.empty:
+            # Update Doc Status
+            docs.loc[docs['DOC_ID'] == doc_id, 'STATUS'] = 'Approved'
+            docs.loc[docs['DOC_ID'] == doc_id, 'COMPLETED_AT'] = today
+            docs.to_csv(DOCS_FILE, index=False, encoding='utf-8-sig')
+            
+        return {"message": "Approved successfully"}
+    except Exception as e:
+        print(f"Approve Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/documents/reject")
+def reject_document(item: dict):
+    try:
+        lines = pd.read_csv(LINES_FILE)
+        docs = pd.read_csv(DOCS_FILE)
+        
+        doc_id = item['doc_id']
+        approver_id = item['approver_id']
+        comment = item.get('comment', '')
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Update Line
+        line_mask = (lines['DOC_ID'] == doc_id) & (lines['APPROVER_ID'] == approver_id) & (lines['STATUS'] == 'Pending')
+        if not lines[line_mask].empty:
+            lines.loc[line_mask, 'STATUS'] = 'Rejected'
+            lines.loc[line_mask, 'APPROVED_AT'] = today
+            lines.loc[line_mask, 'COMMENT'] = comment
+            lines.to_csv(LINES_FILE, index=False, encoding='utf-8-sig')
+        
+        # Update Doc Status immediately
+        docs.loc[docs['DOC_ID'] == doc_id, 'STATUS'] = 'Rejected'
+        docs.loc[docs['DOC_ID'] == doc_id, 'COMPLETED_AT'] = today
+        docs.to_csv(DOCS_FILE, index=False, encoding='utf-8-sig')
+        
+        return {"message": "Rejected successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/documents/create")
+def create_document(item: dict):
+    try:
+        docs = pd.read_csv(DOCS_FILE) if os.path.exists(DOCS_FILE) else pd.DataFrame(columns=['DOC_ID','EMP_ID','DOC_TYPE','TITLE','CONTENT','STATUS','CREATED_AT','COMPLETED_AT'])
+        lines = pd.read_csv(LINES_FILE) if os.path.exists(LINES_FILE) else pd.DataFrame(columns=['LINE_ID','DOC_ID','APPROVER_ID','STEP','STATUS','APPROVED_AT','COMMENT'])
+        
+        # Generate IDs
+        new_doc_id = f"DOC{len(docs) + 1:03d}"
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Create Doc
+        new_doc = {
+            'DOC_ID': new_doc_id,
+            'EMP_ID': item['emp_id'],
+            'DOC_TYPE': item['doc_type'],
+            'TITLE': item['title'],
+            'CONTENT': item['content'],
+            'STATUS': 'Pending',
+            'CREATED_AT': today,
+            'COMPLETED_AT': ''
+        }
+        docs = pd.concat([docs, pd.DataFrame([new_doc])], ignore_index=True)
+        docs.to_csv(DOCS_FILE, index=False, encoding='utf-8-sig')
+        
+        # Create Line (Single Approver for now)
+        approver_id = item.get('approver_id', 'E00001') # Default to Admin
+        new_line_id = f"L{len(lines) + 1:03d}"
+        
+        new_line = {
+            'LINE_ID': new_line_id,
+            'DOC_ID': new_doc_id,
+            'APPROVER_ID': approver_id,
+            'STEP': 1,
+            'STATUS': 'Pending',
+            'APPROVED_AT': '',
+            'COMMENT': ''
+        }
+        lines = pd.concat([lines, pd.DataFrame([new_line])], ignore_index=True)
+        lines.to_csv(LINES_FILE, index=False, encoding='utf-8-sig')
+        
+        return {"message": "Document created", "doc_id": new_doc_id}
+    except Exception as e:
+        print(f"Create Doc Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
