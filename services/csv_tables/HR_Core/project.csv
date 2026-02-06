@@ -1,8 +1,8 @@
 ﻿PJT_ID,PJT_NAME,PJT_LEVEL,UP_PJT_ID,PJT_START_DATE,PJT_END_DATE,PJT_USE_YN
-PJT001,Global Expansion,Major-Category,,2022-02-28,2022-04-07,N
-PJT002,Product Development,Major-Category,,2021-02-18,,Y
-PJT003,Digital Marketing,Major-Category,,2022-10-29,,Y
-PJT004,Customer Experience,Major-Category,,2024-08-19,2024-11-06,N
-PJT005,Sustainability Initiative,Major-Category,,2020-12-29,2021-12-08,N
-PJT006,Global Expansion / Korea Entry,Sub-Category,PJT001,2023-05-13,2024-03-10,N
-PJT007,Product Development / Backend Overhaul,Sub-Category,PJT002,2022-10-27,,Y
+PJT001,Global Expansion,Major-Category,,2023-07-28,2024-02-12,N
+PJT002,Product Development,Major-Category,,2023-08-07,2024-03-17,N
+PJT003,Digital Marketing,Major-Category,,2024-03-20,,Y
+PJT004,Customer Experience,Major-Category,,2024-08-16,,Y
+PJT005,Sustainability Initiative,Major-Category,,2021-02-01,2021-04-16,N
+PJT006,Global Expansion / Korea Entry,Sub-Category,PJT001,2024-11-15,2025-08-08,N
+PJT007,Product Development / Backend Overhaul,Sub-Category,PJT002,2022-09-01,2023-01-11,N

@@ -6,6 +6,7 @@ import { Work } from './pages/Work';
 import { Leaves } from './pages/Leaves';
 import { Payroll } from './pages/Payroll';
 import { Documents } from './pages/Documents';
+import { Insight } from './pages/Insight';
 
 // 아직 구현되지 않은 페이지들을 위한 Placeholder
 const Placeholder = ({ title }: { title: string }) => (
@@ -26,9 +27,9 @@ function App() {
           <Route path="leaves" element={<Leaves />} />
           <Route path="payroll" element={<Payroll />} />
           <Route path="documents" element={<Documents />} />
+          <Route path="insights" element={<Insight />} />
           
           {/* 나머지 메뉴들은 일단 Placeholder로 연결 */}
-          <Route path="insights" element={<Placeholder title="인사이트" />} />
           <Route path="recruit" element={<Placeholder title="채용" />} />
           <Route path="settings" element={<Placeholder title="설정" />} />
         </Route>
