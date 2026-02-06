@@ -471,3 +471,262 @@ def get_admin_leaves_status(year: int = 2025):
     except Exception as e:
         print(f"Admin Leave Error: {e}")
         return []
+
+# --- Payroll API ---
+
+PAYROLL_MONTHLY_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Payroll", "detailed_monthly_payroll_info.csv")
+PAYROLL_ITEM_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Payroll", "payroll_item.csv")
+PAYROLL_YEARLY_FILE = os.path.join(PROJECT_ROOT, "services", "csv_tables", "Payroll", "yearly_payroll_info.csv")
+
+@app.get("/api/payroll/years/{emp_id}")
+def get_payroll_years(emp_id: str):
+    try:
+        if not os.path.exists(PAYROLL_MONTHLY_FILE):
+             return []
+        df = pd.read_csv(PAYROLL_MONTHLY_FILE)
+        
+        user_df = df[df['EMP_ID'] == emp_id].copy()
+        if user_df.empty:
+            return []
+            
+        # PAY_PERIOD is YYYY-MM
+        user_df['YEAR'] = user_df['PAY_PERIOD'].astype(str).str.slice(0, 4)
+        years = sorted(user_df['YEAR'].unique().tolist(), reverse=True)
+        
+        # Exclude 2026 as requested
+        years = [y for y in years if y != '2026']
+        
+        return years
+    except Exception as e:
+        print(f"Payroll Years Error: {e}")
+        return []
+
+@app.get("/api/payroll/my/monthly/{emp_id}")
+def get_my_monthly_payroll(emp_id: str, year: str = None):
+    try:
+        if not os.path.exists(PAYROLL_MONTHLY_FILE):
+             return []
+        
+        try:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE, encoding='utf-8-sig')
+        except:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE)
+            
+        # Ensure string type for filtering
+        df['PAY_PERIOD'] = df['PAY_PERIOD'].astype(str)
+        
+        user_df = df[df['EMP_ID'] == emp_id].copy()
+        
+        if year:
+             user_df = user_df[user_df['PAY_PERIOD'].str.startswith(str(year))]
+        
+        summary_list = []
+        periods = user_df['PAY_PERIOD'].unique()
+        
+        for period in sorted(periods, reverse=True):
+            period_df = user_df[user_df['PAY_PERIOD'] == period]
+            
+            # Simply sum the pay amount. 
+            # In a real app, we would distinguish payments and deductions.
+            total_amount = period_df['PAY_AMOUNT'].sum()
+            
+            pay_date = period_df.iloc[0]['PAY_DATE'] if 'PAY_DATE' in period_df.columns else ""
+            
+            summary_list.append({
+                "pay_period": period,
+                "pay_date": pay_date,
+                "total_amount": total_amount,
+                "pre_tax_amount": total_amount, 
+                "total_deduction": 0 
+            })
+            
+        return summary_list
+    except Exception as e:
+        print(f"My Payroll Error: {e}")
+        return []
+
+@app.get("/api/payroll/my/detail/{emp_id}")
+def get_payroll_detail(emp_id: str, pay_period: str):
+    try:
+        if not os.path.exists(PAYROLL_MONTHLY_FILE): return {}
+        
+        try:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE, encoding='utf-8-sig')
+        except:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE)
+
+        # Filter
+        target_df = df[(df['EMP_ID'] == emp_id) & (df['PAY_PERIOD'] == pay_period)].copy()
+        
+        if target_df.empty: return {}
+        
+        # Join with Item Master for names
+        if os.path.exists(PAYROLL_ITEM_FILE):
+            try:
+                item_df = pd.read_csv(PAYROLL_ITEM_FILE, encoding='utf-8-sig')
+            except:
+                item_df = pd.read_csv(PAYROLL_ITEM_FILE)
+                
+            # Drop category from target if it exists to avoid duplication or collision
+            if 'PAYROLL_ITEM_CATEGORY' in target_df.columns:
+                target_df = target_df.drop(columns=['PAYROLL_ITEM_CATEGORY'])
+                
+            target_df = pd.merge(target_df, item_df[['PAYROLL_ITEM_ID', 'PAYROLL_ITEM_NAME', 'PAYROLL_ITEM_CATEGORY']], on='PAYROLL_ITEM_ID', how='left')
+        else:
+            target_df['PAYROLL_ITEM_NAME'] = target_df['PAYROLL_ITEM_ID']
+            if 'PAYROLL_ITEM_CATEGORY' not in target_df.columns:
+                 target_df['PAYROLL_ITEM_CATEGORY'] = '기타'
+            
+        # Organize by Category
+        items = target_df.fillna("").to_dict(orient="records")
+        
+        # Calculate totals
+        total_pay = target_df['PAY_AMOUNT'].sum()
+        
+        return {
+            "pay_period": pay_period,
+            "pay_date": target_df.iloc[0]['PAY_DATE'] if 'PAY_DATE' in target_df.columns else "",
+            "total_pay": total_pay,
+            "items": items
+        }
+    except Exception as e:
+        print(f"Payroll Detail Error: {e}")
+        return {}
+
+@app.get("/api/payroll/admin/monthly")
+def get_admin_payroll_monthly(pay_period: str):
+    try:
+        if not os.path.exists(PAYROLL_MONTHLY_FILE): return []
+        
+        try:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE, encoding='utf-8-sig')
+        except:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE)
+        
+        # Filter by Period
+        df['PAY_PERIOD'] = df['PAY_PERIOD'].astype(str)
+        period_df = df[df['PAY_PERIOD'] == pay_period].copy()
+        
+        if period_df.empty: return []
+        
+        # 1. Total Pay & Pay Date
+        summary = period_df.groupby('EMP_ID').agg({
+            'PAY_AMOUNT': 'sum',
+            'PAY_DATE': 'first'
+        }).reset_index().rename(columns={'PAY_AMOUNT': 'TOTAL_PAY'})
+        
+        # 2. Category Breakdown
+        pivot = period_df.pivot_table(
+            index='EMP_ID', 
+            columns='PAYROLL_ITEM_CATEGORY', 
+            values='PAY_AMOUNT', 
+            aggfunc='sum', 
+            fill_value=0
+        ).reset_index()
+        
+        # Merge summary with pivot
+        grouped = pd.merge(summary, pivot, on='EMP_ID', how='left')
+        
+        # Ensure columns exist and rename
+        cat_map = {
+            '기본급여': 'BASIC_PAY',
+            '정기수당': 'REGULAR_PAY',
+            '변동급여': 'VARIABLE_PAY'
+        }
+        
+        for ko_col, en_col in cat_map.items():
+            if ko_col not in grouped.columns:
+                grouped[en_col] = 0
+            else:
+                grouped = grouped.rename(columns={ko_col: en_col})
+        
+        # Fill missing columns if they were not in the pivot at all (e.g. rename didn't happen because column didn't exist)
+        for en_col in cat_map.values():
+            if en_col not in grouped.columns:
+                grouped[en_col] = 0
+
+        # Join with Employee Info (Name, Dept)
+        emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME', 'ENG_NAME']]
+        dept_info = load_csv("HR_Core", "department_info.csv")
+        dept_master = load_csv("HR_Core", "department.csv")
+        
+        if dept_info is not None and dept_master is not None:
+             dept_info = dept_info.sort_values('DEP_APP_START_DATE').drop_duplicates('EMP_ID', keep='last')
+             emp_df = pd.merge(emp_df, dept_info[['EMP_ID', 'DEP_ID']], on="EMP_ID", how="left")
+             emp_df = pd.merge(emp_df, dept_master[['DEP_ID', 'DEP_NAME']], on="DEP_ID", how="left")
+             
+        result = pd.merge(emp_df, grouped, on="EMP_ID", how="inner") # Only those who got paid
+        
+        return result.fillna(0).to_dict(orient="records")
+    except Exception as e:
+        print(f"Admin Payroll Error: {e}")
+        return []
+
+@app.get("/api/payroll/admin/yearly")
+def get_admin_yearly_stats(year: int):
+    try:
+        if not os.path.exists(PAYROLL_MONTHLY_FILE): return []
+        
+        try:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE, encoding='utf-8-sig')
+        except:
+            df = pd.read_csv(PAYROLL_MONTHLY_FILE)
+            
+        # Filter by Year
+        df['PAY_PERIOD'] = df['PAY_PERIOD'].astype(str)
+        # Assuming PAY_PERIOD is 'YYYY-MM'
+        yearly_df = df[df['PAY_PERIOD'].str.startswith(str(year))].copy()
+        
+        if yearly_df.empty: return []
+        
+        # 1. Total Pay
+        summary = yearly_df.groupby('EMP_ID').agg({
+            'PAY_AMOUNT': 'sum',
+            'PAY_PERIOD': 'count' # Count months paid
+        }).reset_index().rename(columns={'PAY_AMOUNT': 'TOTAL_PAY', 'PAY_PERIOD': 'PAID_MONTHS'})
+        
+        # 2. Category Breakdown
+        pivot = yearly_df.pivot_table(
+            index='EMP_ID', 
+            columns='PAYROLL_ITEM_CATEGORY', 
+            values='PAY_AMOUNT', 
+            aggfunc='sum', 
+            fill_value=0
+        ).reset_index()
+        
+        # Merge
+        grouped = pd.merge(summary, pivot, on='EMP_ID', how='left')
+        
+        # Standardize columns
+        cat_map = {
+            '기본급여': 'BASIC_PAY',
+            '정기수당': 'REGULAR_PAY',
+            '변동급여': 'VARIABLE_PAY'
+        }
+        
+        for ko_col, en_col in cat_map.items():
+            if ko_col not in grouped.columns:
+                grouped[en_col] = 0
+            else:
+                grouped = grouped.rename(columns={ko_col: en_col})
+        
+        for en_col in cat_map.values():
+            if en_col not in grouped.columns:
+                grouped[en_col] = 0
+                
+        # Join Employee Info
+        emp_df = load_csv("HR_Core", "basic_info.csv").drop_duplicates('EMP_ID')[['EMP_ID', 'NAME', 'ENG_NAME']]
+        dept_info = load_csv("HR_Core", "department_info.csv")
+        dept_master = load_csv("HR_Core", "department.csv")
+        
+        if dept_info is not None and dept_master is not None:
+             dept_info = dept_info.sort_values('DEP_APP_START_DATE').drop_duplicates('EMP_ID', keep='last')
+             emp_df = pd.merge(emp_df, dept_info[['EMP_ID', 'DEP_ID']], on="EMP_ID", how="left")
+             emp_df = pd.merge(emp_df, dept_master[['DEP_ID', 'DEP_NAME']], on="DEP_ID", how="left")
+             
+        result = pd.merge(emp_df, grouped, on="EMP_ID", how="inner")
+        
+        return result.fillna(0).to_dict(orient="records")
+    except Exception as e:
+        print(f"Admin Yearly Payroll Error: {e}")
+        return []
