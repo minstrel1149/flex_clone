@@ -74,7 +74,8 @@ def create_figure_and_df(data_bundle, dimension_ui_name, drilldown_selection, di
             final_cols = [col for col in cols_ordered if col in aggregate_df.columns]
             aggregate_df = aggregate_df[final_cols]
             
-            aggregate_df = aggregate_df.tail(tail_n).T
+            # [수정] 인덱스(기간)를 컬럼으로 포함시키고, 행 이름을 '구분'으로 설정
+            aggregate_df = aggregate_df.tail(tail_n).T.reset_index().rename(columns={'index': '구분'})
 
         return fig, aggregate_df
 
@@ -89,18 +90,18 @@ def create_figure_and_df(data_bundle, dimension_ui_name, drilldown_selection, di
         "tabs": [
             {
                 "label": "월별 현황", 
-                "fig": m_fig.to_dict() if m_fig else None, 
-                "df": m_df.to_dict(orient="records") if m_df is not None else None
+                "fig": m_fig, 
+                "df": m_df
             },
             {
                 "label": "분기별 현황", 
-                "fig": q_fig.to_dict() if q_fig else None, 
-                "df": q_df.to_dict(orient="records") if q_df is not None else None
+                "fig": q_fig, 
+                "df": q_df
             },
             {
                 "label": "연간 현황", 
-                "fig": y_fig.to_dict() if y_fig else None, 
-                "df": y_df.to_dict(orient="records") if y_df is not None else None
+                "fig": y_fig, 
+                "df": y_df
             }
         ]
     }

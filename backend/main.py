@@ -1,24 +1,51 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import os
 import sys
+import time
 
-# 인사이트 라우터 임포트
-from .insight import router as insight_router
+# 프로젝트 루트 경로 계산 (backend 폴더의 상위)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+# 인사이트 라우터 임포트 (경로 문제 방지를 위해 절대 임포트 시도)
+try:
+    from backend.insight import router as insight_router
+except ImportError:
+    from insight import router as insight_router
 
 app = FastAPI()
 
-# CORS 설정
-origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+# CORS 설정 완화 (브라우저 통신 문제 해결)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # 모든 오리진 허용 (개발용)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 간단한 요청 로거 미들웨어
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration = time.time() - start_time
+    print(f"DEBUG: {request.method} {request.url.path} - Status: {response.status_code} - {duration:.2f}s")
+    return response
 
 # 라우터 등록
 app.include_router(insight_router)
 
 def load_csv(category, filename):
-    path = os.path.join("services", "csv_tables", category, filename)
-    if not os.path.exists(path): return None
+    # 절대 경로로 변경
+    path = os.path.join(PROJECT_ROOT, "services", "csv_tables", category, filename)
+    if not os.path.exists(path): 
+        print(f"DEBUG: File not found: {path}")
+        return None
     try:
         return pd.read_csv(path, encoding='utf-8-sig').fillna("")
     except:

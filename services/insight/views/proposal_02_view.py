@@ -9,7 +9,7 @@ def create_figure_and_df(data_bundle, dimension_ui_name, drilldown_selection, di
     """
     # 1. 데이터가 없는 경우 즉시 빈 그래프 반환
     if not data_bundle or "sankey_div_data" not in data_bundle:
-        return go.Figure().update_layout(title_text="분석할 승진 경로 데이터가 없습니다.")
+        return go.Figure().update_layout(title_text="분석할 승진 경로 데이터가 없습니다."), pd.DataFrame()
 
     # 2. 데이터 번들에서 부서별/직무별 데이터 추출
     sankey_div_bundle = data_bundle["sankey_div_data"]

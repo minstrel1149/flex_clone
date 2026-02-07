@@ -5,6 +5,9 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BASE_CSV_PATH = os.path.join(PROJECT_ROOT, "services", "csv_tables")
 
+# 글로벌 캐시 변수
+_cached_base_data = None
+
 def load_csv(category, filename):
     # .csv 확장자가 없는 경우 추가
     if not filename.endswith(".csv"):
@@ -25,8 +28,12 @@ def load_csv(category, filename):
 
 def load_all_base_data():
     """
-    csv_tables 폴더에서 직접 데이터를 로드합니다.
+    csv_tables 폴더에서 직접 데이터를 로드합니다. (캐싱 적용)
     """
+    global _cached_base_data
+    if _cached_base_data is not None:
+        return _cached_base_data
+
     base_data = {
         # HR Core
         "department_df": load_csv("HR_Core", "department"),
@@ -87,4 +94,5 @@ def load_all_base_data():
             if col in df.columns:
                 df[col] = pd.to_datetime(df[col], errors='coerce')
                 
-    return base_data
+    _cached_base_data = base_data
+    return _cached_base_data

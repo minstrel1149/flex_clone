@@ -16,7 +16,7 @@ def create_figure_and_df(data_bundle, dimension_ui_name, drilldown_selection, di
     # --- [수정된 부분 끝] ---
 
     if cohort_pivot.empty:
-        return go.Figure().update_layout(title_text="표시할 데이터가 없습니다.")
+        return go.Figure().update_layout(title_text="표시할 데이터가 없습니다."), pd.DataFrame()
 
     # 텍스트 라벨 생성
     text_labels = cohort_pivot.applymap(lambda x: f'{x:.0f}%' if pd.notna(x) else '')

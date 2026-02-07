@@ -3,7 +3,6 @@ import axios from 'axios';
 import Plot from 'react-plotly.js';
 import { 
   BarChart2, 
-  ChevronRight, 
   Filter, 
   Table as TableIcon,
   Info
@@ -257,20 +256,26 @@ export function Insight() {
                 </div>
                 <div className="pt-4 space-y-8">
                   <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 shadow-sm">
-                    <Plot
-                      data={viewData.tabs[activeTab].fig.data}
-                      layout={{
-                        ...viewData.tabs[activeTab].fig.layout,
-                        autosize: true,
-                        width: undefined,
-                        height: 600,
-                        paper_bgcolor: 'rgba(0,0,0,0)',
-                        plot_bgcolor: 'rgba(0,0,0,0)',
-                      }}
-                      useResizeHandler={true}
-                      style={{ width: "100%", height: "100%" }}
-                      config={{ responsive: true, displayModeBar: false }}
-                    />
+                    {viewData.tabs[activeTab].fig ? (
+                      <Plot
+                        data={viewData.tabs[activeTab].fig.data}
+                        layout={{
+                          ...viewData.tabs[activeTab].fig.layout,
+                          autosize: true,
+                          width: undefined,
+                          height: 600,
+                          paper_bgcolor: 'rgba(0,0,0,0)',
+                          plot_bgcolor: 'rgba(0,0,0,0)',
+                        }}
+                        useResizeHandler={true}
+                        style={{ width: "100%", height: "100%" }}
+                        config={{ responsive: true, displayModeBar: false }}
+                      />
+                    ) : (
+                      <div className="h-[400px] flex items-center justify-center text-gray-400">
+                        해당 기간의 시각화 데이터가 없습니다.
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-gray-800 font-bold">
