@@ -140,12 +140,33 @@ async def get_view(
     
     # 4. Execute view function
     try:
+        # order_map 보완: 실제 데이터(data_result)에 있는 값이 order_map에 없는 경우 추가
+        # (preparer.py에서도 일부 처리하지만, 여기서 한 번 더 보장)
+        final_order_map = order_map.copy()
+        
+        # data_result가 dict이고 analysis_df 등을 포함하는 경우
+        df_for_order = None
+        if isinstance(data_result, dict):
+            df_for_order = data_result.get("analysis_df")
+        elif isinstance(data_result, pd.DataFrame):
+            df_for_order = data_result
+            
+        if df_for_order is not None and not df_for_order.empty:
+            for col in df_for_order.columns:
+                if col in final_order_map:
+                    actual_vals = df_for_order[col].dropna().unique().tolist()
+                    current_order = list(final_order_map[col])
+                    for val in actual_vals:
+                        if val not in current_order and val != '':
+                            current_order.append(val)
+                    final_order_map[col] = current_order
+
         view_result = module.create_figure_and_df(
             data_bundle=actual_data_bundle,
             dimension_ui_name=dimension,
             drilldown_selection=drilldown,
             dimension_config=DIMENSION_CONFIG,
-            order_map=order_map
+            order_map=final_order_map
         )
     except Exception as e:
         import traceback
@@ -163,7 +184,14 @@ async def get_view(
             return [json_safe(i) for i in obj]
         elif isinstance(obj, pd.DataFrame):
             # DataFrame은 records 형태의 리스트로 변환 후 재귀 처리
-            return json_safe(obj.replace({np.nan: None}).to_dict(orient="records"))
+            df_to_export = obj.copy()
+            # RangeIndex가 아닌 경우(의미 있는 인덱스인 경우) 컬럼으로 변환
+            if not isinstance(df_to_export.index, pd.RangeIndex):
+                # 인덱스 이름이 없거나 'index'인 경우 '구분'으로 변경
+                if df_to_export.index.name is None or df_to_export.index.name == 'index':
+                    df_to_export.index.name = "구분"
+                df_to_export = df_to_export.reset_index()
+            return json_safe(df_to_export.replace({np.nan: None}).to_dict(orient="records"))
         elif isinstance(obj, pd.Series):
             return json_safe(obj.to_dict())
         elif isinstance(obj, (pd.Timestamp, datetime.datetime, datetime.date)):

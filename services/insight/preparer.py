@@ -19,8 +19,31 @@ office_order = [
     'Strategy Office', 'Finance Office', 'R&D Office', 'QA Office', 
     'Domestic Sales Office', 'Global Sales Office', 'Production Office', 'Support Office'
 ]
-job_l1_order = ['IT', 'Business Support', 'Sales & Marketing', 'Operations']
+job_l1_order = ['IT', 'Planning', 'Sales & Marketing', 'Management Support', 'Production & Engineering']
 position_order = ['Staff', 'Manager', 'Director', 'C-Level']
+
+# --------------------------------------------------------------------------
+# --- 순서 정보 Helper ---
+# --------------------------------------------------------------------------
+
+def get_data_driven_order(col_name, df, preferred_order):
+    """
+    데이터에 존재하는 실제 값들을 기반으로 순서를 생성합니다.
+    preferred_order에 있는 값들을 우선적으로 배치하고, 
+    나머지 값들은 정렬하여 뒤에 붙입니다.
+    """
+    if col_name not in df.columns:
+        return preferred_order
+    
+    actual_values = [v for v in df[col_name].dropna().unique() if v != '']
+    
+    # preferred_order에 있고 실제 데이터에도 있는 값들
+    ordered = [v for v in preferred_order if v in actual_values]
+    
+    # 실제 데이터에는 있지만 preferred_order에는 없는 값들
+    remaining = sorted([v for v in actual_values if v not in preferred_order])
+    
+    return ordered + remaining
 
 # --------------------------------------------------------------------------
 # --- 순서 정보 ---
@@ -466,9 +489,16 @@ def prepare_basic_proposal_data(
             'yearly': yearly_summary
         }
             
+    # 6. 동적으로 순서 정보 보완 (데이터에 있는 모든 값이 나오도록)
+    dynamic_order_map = order_map.copy()
+    for ui_name, col_name in dimensions.items():
+        if col_name:
+            # headcount_df가 시계열 전체를 포함하므로 기준으로 사용하기 좋음
+            dynamic_order_map[col_name] = get_data_driven_order(col_name, headcount_df, order_map.get(col_name, []))
+
     return {
         "data_bundle": data_bundle,
-        "order_map": order_map
+        "order_map": dynamic_order_map
     }
 
 
@@ -533,9 +563,14 @@ def prepare_proposal_01_data(
     analysis_df = pd.merge(promo_speed_df, filtered_emps_df, on='EMP_ID', how='inner')
     analysis_df = analysis_df.dropna(subset=['DIVISION_NAME', 'JOB_L1_NAME'])
     
+    # 6. 동적으로 순서 정보 보완
+    dynamic_order_map = order_map.copy()
+    for col in ['DIVISION_NAME', 'JOB_L1_NAME', 'POSITION_NAME']:
+        dynamic_order_map[col] = get_data_driven_order(col, analysis_df, order_map.get(col, []))
+
     return {
         "analysis_df": analysis_df,
-        "order_map": order_map # 순서 정보를 함께 반환
+        "order_map": dynamic_order_map # 순서 정보를 함께 반환
     }
 
 
@@ -700,9 +735,15 @@ def prepare_proposal_03_data(
 
     # 3. 필터링된 전체 데이터프레임을 그대로 반환
     # view 단에서 이 데이터를 받아 자유롭게 그룹핑하고 시각화할 수 있습니다.
+    
+    # 4. 동적으로 순서 정보 보완
+    dynamic_order_map = order_map.copy()
+    for col in ['DIVISION_NAME', 'JOB_L1_NAME', 'POSITION_NAME']:
+        dynamic_order_map[col] = get_data_driven_order(col, analysis_df, order_map.get(col, []))
+
     return {
         "analysis_df": analysis_df,
-        "order_map": order_map # 전역 order_map 사용
+        "order_map": dynamic_order_map
     }
 
 
@@ -741,9 +782,15 @@ def prepare_proposal_04_data(
 
     # 3. 필터링된 전체 데이터프레임을 그대로 반환
     # view 단에서 이 데이터를 받아 자유롭게 그룹핑하고 시각화할 수 있습니다.
+    
+    # 4. 동적으로 순서 정보 보완
+    dynamic_order_map = order_map.copy()
+    for col in ['DIVISION_NAME', 'JOB_L1_NAME', 'POSITION_NAME']:
+        dynamic_order_map[col] = get_data_driven_order(col, analysis_df, order_map.get(col, []))
+
     return {
         "analysis_df": analysis_df,
-        "order_map": order_map # 전역 order_map 사용
+        "order_map": dynamic_order_map
     }
 
 
