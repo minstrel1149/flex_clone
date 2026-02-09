@@ -14,8 +14,10 @@ if PROJECT_ROOT not in sys.path:
 # 인사이트 라우터 임포트 (경로 문제 방지를 위해 절대 임포트 시도)
 try:
     from backend.insight import router as insight_router
+    from backend.recruitment import router as recruitment_router
 except ImportError:
     from insight import router as insight_router
+    from recruitment import router as recruitment_router
 
 app = FastAPI()
 
@@ -39,6 +41,7 @@ async def log_requests(request: Request, call_next):
 
 # 라우터 등록
 app.include_router(insight_router)
+app.include_router(recruitment_router)
 
 def load_csv(category, filename):
     # 절대 경로로 변경

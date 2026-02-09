@@ -1,0 +1,6 @@
+POSITION_ID,TITLE,DEPT_NAME,STATUS,CREATED_AT
+REC001,Backend Developer,Development Division,Open,2025-11-01
+REC002,Frontend Developer,Development Division,Open,2025-11-05
+REC003,HR Manager,Planning Division,Open,2025-11-10
+REC004,Strategic Planner,Planning Division,Open,2025-11-12
+REC005,Sales Representative,Sales Division,Closed,2025-10-01
